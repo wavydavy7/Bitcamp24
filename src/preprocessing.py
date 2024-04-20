@@ -8,36 +8,30 @@ import os
 import time
 import pandas as pd
 import tensorflow as tf
-from tensorflow.keras import layers, models, callbacks
+from keras import layers, models, callbacks
+from keras.layers import Dense, Activation, Dropout, Flatten, BatchNormalization, Conv2D, MaxPool2D
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
-import pennylane as qml
 
 emotions = ['angry', 'disgusted', 'fearful', 'happy', 'sad', 'surprised', 'neutral']
 
-n_qubits = 2
-dev = qml.device("default.qubit", wires=n_qubits)
-
-@qml.qnode(dev)
-def qnode(inputs, weights):
-    qml.AngleEmbedding(inputs, wires=range(n_qubits))
-    qml.BasicEntanglerLayers(weights, wires=range(n_qubits))
-    return [qml.expval(qml.PauliZ(wires=i)) for i in range(n_qubits)]
-
 def main():
+    # Ensure tensorflow is utilizing the GPU
+    if (len(tf.config.list_physical_devices('GPU')) == 0):
+        quit()
+
     df = pd.read_csv("./dataset/data.csv").drop(columns=["Usage"])
 
     df = df[df["emotion"].isin([3, 4])]
     
-    labels = df["emotion"].values
+    labels = df["emotion"].apply(lambda x: x-3).values
     image_strings = df["pixels"].values
     image_vector = np.array([int(x) for s in image_strings for x in s.split()])
     images = image_vector.reshape(labels.shape[0], 48, 48)
 
-    print(images.shape)
-    print(labels.shape)
-
+    # print(images.shape)
+    # print(labels.shape)
     # print(labels[0])
     # plt.imshow(images[0], cmap='gray')  # You can change the colormap as needed
     # plt.axis('off')  # Turn off axis
@@ -46,37 +40,53 @@ def main():
     train_images, test_images, train_labels, test_labels \
         = train_test_split(images, labels, test_size=0.1, random_state=42)
 
-    n_layers = 6
-    weight_shapes = {"weights": (n_layers, n_qubits)}
-    qlayer = qml.qnn.KerasLayer(qnode, weight_shapes, output_dim=n_qubits)
-
     model = models.Sequential()
-    clayer_1 = layers.Conv2D(32, (3, 3), activation='relu', input_shape=(48, 48, 1))
-    clayer_2 = layers.MaxPooling2D((2, 2))
-    clayer_3 = layers.Conv2D(64, (3, 3), activation='relu')
-    clayer_4 = layers.MaxPooling2D((2, 2))
-    clayer_5 = layers.Conv2D(128, (3, 3), activation='relu')
-    clayer_6 = layers.Flatten()
-    clayer_7 = layers.Dense(128, activation='relu')
-    clayer_9 = layers.Dense(7, activation='softmax')
+    model.add(Conv2D(32, 3, input_shape=(48, 48, 1), padding='same', 
+                    activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(32, 3, padding='same', activation='relu'))
+    model.add(BatchNormalization())
+    model.add(MaxPool2D(pool_size=(2, 2), strides=2))
 
-    # clayer_1 = tf.keras.layers.Dense(2)
-    # clayer_2 = tf.keras.layers.Dense(2, activation="softmax")
-    model = tf.keras.models.Sequential([clayer_1, 
-                                        clayer_2,
-                                        clayer_3,
-                                        clayer_4,
-                                        clayer_5,
-                                        clayer_6,
-                                        clayer_7,
-                                        qlayer, 
-                                        clayer_9])
+    # 2nd stage
+    model.add(Conv2D(64, 3, padding='same', 
+                    activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(64, 3, padding='same', 
+                    activation='relu'))
+    model.add(BatchNormalization())
+    model.add(MaxPool2D(pool_size=(2, 2), strides=2))
+    model.add(Dropout(0.25))
 
-    # Store the summary
-    summary_list = []
-    model.summary(print_fn=lambda x: summary_list.append(x))
-    SUMMARY = "\n".join(summary_list)
-    print(SUMMARY)
+    # 3rd stage
+    model.add(Conv2D(128, 3, padding='same', 
+                    activation='relu'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(128, 3, padding='same', 
+                    activation='relu'))
+    model.add(BatchNormalization())
+    model.add(MaxPool2D(pool_size=(2, 2), strides=2))
+    model.add(Dropout(0.25))
+
+    # FC layers
+    model.add(Flatten())
+    model.add(Dense(256))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+
+    model.add(Dense(256))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+
+    model.add(Dense(256))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+
+    model.add(Dense(2))
+    model.add(Activation('softmax'))
 
     callback = callbacks.EarlyStopping(
         monitor="val_accuracy", baseline=0.8, verbose=1, 
@@ -112,7 +122,6 @@ def main():
 
     # Create a dataframe to store results to be saved into file
     results = pd.DataFrame()
-    results["Summary"] = [SUMMARY]
     results["Number of Epochs"] = [NUM_EPOCHS]
     results["Fit Time"] = [end_time - start_time]
     results["Test Accuracy"] = [test_acc]
@@ -125,6 +134,13 @@ def main():
     print("Results: ")
     print(results)
 
+    # Save df to csv
+    dir = f"./model/"
+    print(f"Storing model and results in {dir}")
+    if not os.path.exists(dir): os.makedirs(dir)
+    model.save_weights(f'{dir}weights.h5')
+    model.save(f'{dir}model.h5')
+    results.to_csv(f"{dir}evaluation.csv", header=False)
 
 if __name__ == '__main__':
     main()
