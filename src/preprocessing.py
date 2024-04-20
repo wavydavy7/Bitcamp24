@@ -4,7 +4,7 @@ import os
 
 def main():
 
-    df = pd.read_csv("./dataset/test.csv")
+    df = pd.read_csv("../dataset/data.csv")
     print(df.columns)
 
 if __name__ == '__main__':
