@@ -13,6 +13,8 @@ from keras.layers import Dense, Activation, Dropout, Flatten, BatchNormalization
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
+from keras.preprocessing.image import ImageDataGenerator
+
 import cv2
 
 
@@ -46,11 +48,37 @@ def main():
         num += 1
 
     # Convert the list of images to a NumPy array
-    images_array = np.array(images)
+    images = np.array(images)
+
+    images = np.dot(images[..., :3], [0.2989, 0.5870, 0.1140])
+
+    images = np.expand_dims(images, axis=-1)
+
+    datagen = ImageDataGenerator(
+        rotation_range=30,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
+        shear_range=0.2,
+        zoom_range=0.2,
+        horizontal_flip=True,
+        fill_mode='nearest')
+
+    # Fit the ImageDataGenerator to your data
+    datagen.fit(images)
+
+    # Generate augmented images
+    augmented_images = []
+    for batch in datagen.flow(images, batch_size=32):
+        augmented_images.append(batch)
+        if len(augmented_images) * 32 >= images.shape[0]:
+            break
+
+    # Convert augmented images back to numpy array
+    augmented_images = np.concatenate(augmented_images, axis=0)
 
     # Update console
     print(f"Saving numpy array to file!")
-    np.save(f'./dataset/happy.npy', images_array)
+    np.save(f'./dataset/happy.npy', augmented_images)
 
     print(f"Processing sad images...")
     sad_dir = f"./dataset/sad/"
@@ -78,11 +106,37 @@ def main():
         num += 1
 
     # Convert the list of images to a NumPy array
-    images_array = np.array(images)
+    images = np.array(images)
+
+    images = np.dot(images[..., :3], [0.2989, 0.5870, 0.1140])
+
+    images = np.expand_dims(images, axis=-1)
+
+    datagen = ImageDataGenerator(
+        rotation_range=30,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
+        shear_range=0.2,
+        zoom_range=0.2,
+        horizontal_flip=True,
+        fill_mode='nearest')
+
+    # Fit the ImageDataGenerator to your data
+    datagen.fit(images)
+
+    # Generate augmented images
+    augmented_images = []
+    for batch in datagen.flow(images, batch_size=32):
+        augmented_images.append(batch)
+        if len(augmented_images) * 32 >= images.shape[0]:
+            break
+
+    # Convert augmented images back to numpy array
+    augmented_images = np.concatenate(augmented_images, axis=0)
 
     # Update console
     print(f"Saving numpy array to file!")
-    np.save(f'./dataset/sad.npy', images_array)
+    np.save(f'./dataset/sad.npy', augmented_images)
 
     # print(images_array.shape)
 
@@ -112,13 +166,39 @@ def main():
         num += 1
 
     # Convert the list of images to a NumPy array
-    images_array = np.array(images)
+    images = np.array(images)
+
+    images = np.dot(images[..., :3], [0.2989, 0.5870, 0.1140])
+
+    images = np.expand_dims(images, axis=-1)
+
+    datagen = ImageDataGenerator(
+        rotation_range=30,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
+        shear_range=0.2,
+        zoom_range=0.2,
+        horizontal_flip=True,
+        fill_mode='nearest')
+
+    # Fit the ImageDataGenerator to your data
+    datagen.fit(images)
+
+    # Generate augmented images
+    augmented_images = []
+    for batch in datagen.flow(images, batch_size=32):
+        augmented_images.append(batch)
+        if len(augmented_images) * 32 >= images.shape[0]:
+            break
+
+    # Convert augmented images back to numpy array
+    augmented_images = np.concatenate(augmented_images, axis=0)
 
     # Update console
     print(f"Saving numpy array to file!")
-    np.save(f'./dataset/neutral.npy', images_array)
+    np.save(f'./dataset/neutral.npy', augmented_images)
 
-    print(images_array.shape)
+    print(images.shape)
 
 if __name__ == '__main__':
     main()
