@@ -28,7 +28,7 @@ def predict():
     # sad counter
     n_sad = 0
 
-    while(n < 10): 
+    while(n < 8): 
         
         # Capture the video frame by frame 
         ret, frame = vid.read() 

@@ -28,7 +28,7 @@ const ChatComponent = () => {
       let sentiment
       await fetch("/api/ml").then(res => res.json()).then(data => {sentiment = data.sentiment})
       if (sentiment == 0) {
-        const data = await fetchChatGPTResponse(prompt + "but in an uwu voice please!");
+        const data = await fetchChatGPTResponse(prompt + "but in an uwu voice please, and in five sentences or less!");
         if (data && data.choices && data.choices.length > 0) {
           const responseText = data.choices[0].message.content;
           setResponse(responseText); // Update response state
@@ -38,7 +38,7 @@ const ChatComponent = () => {
           console.error("No data received or data format incorrect.");
         }
       } else {
-        const data = await fetchChatGPTResponse(prompt + "but in a really deadpan voice.");
+        const data = await fetchChatGPTResponse(prompt + "but in a really deadpan voice, and in five sentences or less.");
         if (data && data.choices && data.choices.length > 0) {
           const responseText = data.choices[0].message.content;
           setResponse(responseText); // Update response state
@@ -99,8 +99,8 @@ const ChatComponent = () => {
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 2048 2048"
-                width="30"
-                height="28"
+                width="33"
+                height="33"
                 fill="#3485F7"
               >
                 <path d="M221 1027h931l128-64-128-64H223L18 77l1979 883L18 1843l203-816z" />
