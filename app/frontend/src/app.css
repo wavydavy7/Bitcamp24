@@ -1,0 +1,19 @@
+.vid {
+  position: absolute;
+  top: 0;
+  right: 0; /* Aligns video to the right */ /* Half of the container */
+  padding: 1rem;
+}
+
+.chat {
+  position: absolute;
+  bottom: 5rem;
+  left: 27rem;
+}
+
+body {
+  background-color: #f9f9f9; /* Set your desired color, example uses light gray */
+  margin: 0; /* Remove default margin */
+  padding: 0; /* Remove default padding */
+  font-family: Arial, sans-serif; /* Optional: Sets a default font for the page */
+}

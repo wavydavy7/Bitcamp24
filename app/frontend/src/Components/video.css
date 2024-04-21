@@ -1,0 +1,10 @@
+.vid {
+  width: 10rem;
+  height: 10rem;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: row; /* Aligns children (textarea and button) vertically */
+  align-items: flex-start; /* Aligns children to the start of the flex container (left-aligned) */ /* Adds space between the textarea and the button */
+}
