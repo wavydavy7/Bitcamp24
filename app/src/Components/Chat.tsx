@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { fetchChatGPTResponse } from "../api";
 import "./chat.css";
 import { render } from "react-dom";
@@ -6,6 +6,11 @@ const ChatComponent = () => {
   console.log("success");
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");
+  const [sentiment, setSentiment] = useState(5)
+
+  useEffect(() => {
+    fetch("/api/ml").then(res => res.json()).then(data => {setSentiment(data.sentiment)})
+  }, []);
 
   const handleInputChange = (event: {
     target: { value: React.SetStateAction<string> };
@@ -20,15 +25,30 @@ const ChatComponent = () => {
     renderMessageEle(prompt, "user");
     setPrompt("");
     try {
-      const data = await fetchChatGPTResponse(prompt);
-      if (data && data.choices && data.choices.length > 0) {
-        const responseText = data.choices[0].message.content;
-        setResponse(responseText); // Update response state
-        renderMessageEle(responseText, "chatbot"); // Render bot response
-        setScrollPosition(); // Adjust scroll if necessary
+      let sentiment
+      await fetch("/api/ml").then(res => res.json()).then(data => {sentiment = data.sentiment})
+      if (sentiment == 0) {
+        const data = await fetchChatGPTResponse(prompt + "but in an uwu voice please!");
+        if (data && data.choices && data.choices.length > 0) {
+          const responseText = data.choices[0].message.content;
+          setResponse(responseText); // Update response state
+          renderMessageEle(responseText, "chatbot"); // Render bot response
+          setScrollPosition(); // Adjust scroll if necessary
+        } else {
+          console.error("No data received or data format incorrect.");
+        }
       } else {
-        console.error("No data received or data format incorrect.");
+        const data = await fetchChatGPTResponse(prompt + "but in a really deadpan voice.");
+        if (data && data.choices && data.choices.length > 0) {
+          const responseText = data.choices[0].message.content;
+          setResponse(responseText); // Update response state
+          renderMessageEle(responseText, "chatbot"); // Render bot response
+          setScrollPosition(); // Adjust scroll if necessary
+        } else {
+          console.error("No data received or data format incorrect.");
+        }
       }
+      
     } catch (error) {
       console.error("Failed to fetch response:", error);
       renderMessageEle("Failed to fetch response.", "chatbot"); // Show error message in chat

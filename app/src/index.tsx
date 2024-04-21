@@ -11,12 +11,11 @@ root.render(
     <div className="chat">
       <ChatComponent />
     </div>
-    <div>
+    {/* <div>
       <App />
-    </div>
-    
-    <div className="vid">
+    </div> */}
+    {/* <div className="vid">
       <Video />
-    </div>
+    </div> */}
   </div>
 );
