@@ -14,12 +14,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-emotions = ['happy', 'sad']
-
 def main():
     # Ensure tensorflow is utilizing the GPU
     if (len(tf.config.list_physical_devices('GPU')) == 0):
         quit()
+
+    emotions = ['happy', 'sad']
 
     sad = np.load('./dataset/sad.npy')
     happy = np.load('./dataset/happy.npy')[:sad.shape[0]]
