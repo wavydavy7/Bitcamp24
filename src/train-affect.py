@@ -9,20 +9,20 @@ import time
 import pandas as pd
 import tensorflow as tf
 from keras import layers, models, callbacks
-from keras.layers import Dense, Activation, Dropout, Flatten, BatchNormalization, Conv2D, MaxPool2D
+from keras.layers import Dense, Activation, Dropout, Flatten, BatchNormalization, Conv2D, MaxPooling2D, MaxPool2D
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
-
-emotions = ['happy', 'sad']
 
 def main():
     # Ensure tensorflow is utilizing the GPU
     if (len(tf.config.list_physical_devices('GPU')) == 0):
         quit()
 
-    happy = np.load('./dataset/happy.npy')
+    emotions = ['happy', 'sad']
+
     sad = np.load('./dataset/sad.npy')
+    happy = np.load('./dataset/happy.npy')[:sad.shape[0]]
 
     happy_labels = np.full((happy.shape[0], 1), 0)
     sad_labels = np.full((sad.shape[0], 1), 1)
@@ -38,8 +38,10 @@ def main():
     train_images, test_images, train_labels, test_labels \
         = train_test_split(images, labels, test_size=0.1, random_state=42)
 
+    # Note, model credits to 
+    # https://github.com/susantabiswas/realtime-facial-emotion-analyzer/blob/master/training/facial%20Emotions.ipynb
     model = models.Sequential()
-    model.add(Conv2D(32, 3, input_shape=(96, 96, 3), padding='same', 
+    model.add(Conv2D(32, 3, input_shape=(96, 96, 1), padding='same', 
                     activation='relu'))
     model.add(BatchNormalization())
     model.add(Conv2D(32, 3, padding='same', activation='relu'))
@@ -96,7 +98,7 @@ def main():
             metrics=["accuracy"])
 
     # Number of epochs
-    NUM_EPOCHS = 20
+    NUM_EPOCHS = 200
 
     # Get training start time
     start_time = time.time()
