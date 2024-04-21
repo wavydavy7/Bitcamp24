@@ -7,6 +7,8 @@ from keras.models import load_model
 
 app = Flask(__name__)
 
+# define a video capture object 
+vid = cv2.VideoCapture(0) 
 dir = f"./model/affect/"
 model = load_model(f'{dir}model.h5')
 model.load_weights(f'{dir}weights.h5')
@@ -14,8 +16,6 @@ haar_cascade_face_detector = cv2.CascadeClassifier('./haar_face.xml')
 
 @app.route('/api/ml')
 def predict():
-    # define a video capture object 
-    vid = cv2.VideoCapture(0) 
 
     emotions = ['HAPPY', 'SAD']
 
@@ -28,7 +28,7 @@ def predict():
     # sad counter
     n_sad = 0
 
-    while(n < 15): 
+    while(n < 10): 
         
         # Capture the video frame by frame 
         ret, frame = vid.read() 
@@ -90,9 +90,6 @@ def predict():
                 
         # Increment frame counter
         n += 1
-
-    # After the loop release the cap object 
-    vid.release() 
 
     if (n_happy > n_sad):
         print("FINAL VERDICT: HAPPY")
